@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#224C64">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="stylesheet" href="index.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/material-design-iconic-font/2.2.0/css/material-design-iconic-font.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
+  <title>Namaste NodeJs</title>
+</head>
+<body>
+<main>
+<!-- Navbar -->
+<nav>
+ <h1>Namaste <span>NodeJs</span></h1>
+ <div>
+ <i class="zmdi zmdi-brightness-4" onclick="$('html').classList.toggle('invert')"></i>
+ <i class="zmdi zmdi-github"></i>  
+ </div>
+</nav>
+
+<!-- Content & Season -->
+<div class="table">
+ <div class="content">
+ <p>Table of Content <i class="zmdi zmdi-caret-down"></i></p>
+ <div>
+  <span class="active">First design</span>
+  <span>Second design</span>
+  <span>Second design</span>
+  <span>Second design</span>
+  <span>Second design</span>
+  <span>Second design</span>
+  <span>Second design</span>
+ </div>
+ </div> 
+ <div class="season">
+ <p>Season - 01<i class="zmdi zmdi-caret-down"></i></p>
+ <div><span>Season - 01</span><span>Season - 02</span><span>Season - 03</span></div>
+ </div>
+</div>
+<!-- Quick Keys -->
+<div class="keys">
+ <button>Download <i class="zmdi zmdi-download"></i><div></div></button>
+ <button>Share <i class="zmdi zmdi-share"></i></button>
+ <button>Report <i class="zmdi zmdi-info"></i><div></div></button>
+</div>
+
+
+<!-- Notes -->
+<div class="notes">
+ <div class="markdown-body"></div>
+ <div class="notes-keys">
+  <button>< Prev</button>
+  <button>Next ></button>
+ </div>
+</div>
+
+<!-- footer -->
+<div class="footer">
+ <h1>Namaste <span>NodeJs</span><div></div></h1>
+ <p>Notes by <a href="https://github.com/akshadjaiswal">Akshad Jaiswal</a></p>
+ <p>Website by <a href="https://github.com/abtp2">Ashutosh_dev</a></p>
+ <p>Orginal content by <a href="https://github.com/akshaymarch7">Akshay Saini</a></p>
+</div>
+
+
+
+</main>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+<script>
+//custom script 
+function $(selector,parent){
+var x;
+try{
+const elements = document.querySelectorAll(selector);
+if(elements.length == 1){x = elements[0]}
+else if(elements.length == 0){x = null}
+else{x = elements}
+}catch(error){
+x = error;
+}return x;
+}
+
+/* Table of content */
+$(".table p").forEach((p)=>{
+p.onclick =()=>{
+p.parentElement.querySelector("div").classList.toggle("open-table");
+}
+});
+
+/* Data */
+let data ={
+S01 : [
+"S1 01- Introduction to NodeJs",
+"S1 02 - JS on the Server",
+"S1 03 - Let's Write the code",
+"S1 04 - module.export & require",
+"S1 05 - Diving in to NodeJS github repo",
+"S1 06 - libuv & async IO",
+"S1 07 - sync async, setTimeout Zero - Code",
+"S1 08 -  Deep dive into v8 JS Engine",
+"S1 09 - libuv & event loop",
+"S1 10 - Thread Pool in libuv",
+"S1 11 - Creating the Server",
+"S1 12 - Databases  SQL and NoSQL",
+"S1 13 - Creating a database & mongodb"
+],
+S02 : [
+"S2 01 - Microservices vs Monolith - How to build a project",
+"S2 02 - Features, HLD  LLD and Planning",
+"S2 03 - Creating our Express server",
+"S2 04 - Routing and Request handlers",
+"S2 05 - Middlewares and Error Handlers",
+"S2 06 - Database, Schema, Models & Mongoose",
+"S2 07 - Diving into APIs",
+"S2 08 - Data Sanitization & Schema Validations",
+"S2 09 - Encrypting Passwords",
+"S2 10 - Authentication, JWT & Cookies",
+"S2 11 - Diving into the APIs and Express router",
+"S2 12 - Logical DB Query and Compound Indexes",
+"S2 13 - ref, Populate and Thought Process of writing API's",
+"S2 14 - Building Feed API and Pagination",
+"S2 15 - DevTinder UI - Part 1",
+"S2 16 - DevTinder UI - Part 2",
+"S2 17 - DevTinder UI - Part 3",
+"S2 18 - DevTinder UI - Part 4",
+"S2 19 - DevTinder UI - Part 5"
+],
+S03 : [
+"S3 01 - Lanching an AWS Instance and Deploying frontend",
+"S3 02 - Nginx and Backend Node App Development",
+"S3 03 - Adding a custom Domain name"
+]
+};
+
+
+function loadAllMarkdown(){
+return new Promise((resolve, reject) =>{
+fetch(`./main/${data.S01[4]}/README.md`)
+   .then(response => response.text())
+   .then(markdown => {
+    const html = marked.parse(markdown);
+     document.querySelector(".markdown-body").insertAdjacentHTML("beforeend", html);
+     resolve();       
+    });
+});
+}
+loadAllMarkdown().then(() =>{
+hljs.highlightAll();
+});
+</script>
+</body>
+</html>
