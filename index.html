@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#224C64">
+  <meta name="theme-color" content="var(--bodybg)">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <link rel="stylesheet" href="index.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/material-design-iconic-font/2.2.0/css/material-design-iconic-font.min.css">
@@ -16,8 +16,8 @@
 <nav>
  <h1>Namaste <span>NodeJs</span></h1>
  <div>
- <i class="zmdi zmdi-brightness-4" onclick="$('html').classList.toggle('invert')"></i>
- <i class="zmdi zmdi-github"></i>  
+ <i class="zmdi zmdi-brightness-7"></i>
+ <i class="zmdi zmdi-github"></i>
  </div>
 </nav>
 
@@ -26,13 +26,7 @@
  <div class="content">
  <p>Table of Content <i class="zmdi zmdi-caret-down"></i></p>
  <div>
-  <span class="active">First design</span>
-  <span>Second design</span>
-  <span>Second design</span>
-  <span>Second design</span>
-  <span>Second design</span>
-  <span>Second design</span>
-  <span>Second design</span>
+<!-- <span class="active">1st design</span> -->  
  </div>
  </div> 
  <div class="season">
@@ -42,9 +36,9 @@
 </div>
 <!-- Quick Keys -->
 <div class="keys">
- <button>Download <i class="zmdi zmdi-download"></i><div></div></button>
- <button>Share <i class="zmdi zmdi-share"></i></button>
- <button>Report <i class="zmdi zmdi-info"></i><div></div></button>
+ <button onclick="download()">Download <i class="zmdi zmdi-download"></i><div></div></button>
+ <button onclick="share()">Share <i class="zmdi zmdi-share"></i></button>
+ <button onclick="report()">Report <i class="zmdi zmdi-alert-circle-o"></i><div></div></button>
 </div>
 
 
@@ -52,8 +46,8 @@
 <div class="notes">
  <div class="markdown-body"></div>
  <div class="notes-keys">
-  <button>< Prev</button>
-  <button>Next ></button>
+  <button onclick="prev()">< Prev</button>
+  <button onclick="next()">Next ></button>
  </div>
 </div>
 
@@ -84,6 +78,33 @@ x = error;
 }return x;
 }
 
+/* Dark Mode */
+let mode = localStorage.getItem("mode");
+window.addEventListener("load", ()=>{
+ if(mode && mode =="dark"){
+ $("html").classList.add("dark");
+ }else{
+ $("html").classList.remove("dark");
+ }
+});
+$("nav div i")[0].onclick =()=>{
+$("html").classList.toggle("dark");
+$("nav div i")[0].classList.add("spin");
+if($("html").classList[0] =="dark"){
+ localStorage.setItem("mode", "dark");
+}else{
+ localStorage.setItem("mode", "light");
+}
+setTimeout(()=>{
+ $("nav div i")[0].classList.remove("spin");
+},300);
+}
+
+/* GitHub */
+$("nav div i")[1].onclick =()=>{
+ window.location.href ="https://github.com/abtp2/Namaste-NodeJs";
+}
+
 /* Table of content */
 $(".table p").forEach((p)=>{
 p.onclick =()=>{
@@ -94,7 +115,7 @@ p.parentElement.querySelector("div").classList.toggle("open-table");
 /* Data */
 let data ={
 S01 : [
-"S1 01- Introduction to NodeJs",
+"S1 01 - Introduction to NodeJs",
 "S1 02 - JS on the Server",
 "S1 03 - Let's Write the code",
 "S1 04 - module.export & require",
@@ -105,7 +126,7 @@ S01 : [
 "S1 09 - libuv & event loop",
 "S1 10 - Thread Pool in libuv",
 "S1 11 - Creating the Server",
-"S1 12 - Databases  SQL and NoSQL",
+"S1 12 - Databases SQL and NoSQL",
 "S1 13 - Creating a database & mongodb"
 ],
 S02 : [
@@ -137,20 +158,155 @@ S03 : [
 };
 
 
-function loadAllMarkdown(){
+/* Load Markdown */
+function loadAllMarkdown(x,y){
 return new Promise((resolve, reject) =>{
-fetch(`./main/${data.S01[4]}/README.md`)
+fetch(`./main/${data[x][y]}/README.md`)
    .then(response => response.text())
    .then(markdown => {
     const html = marked.parse(markdown);
-     document.querySelector(".markdown-body").insertAdjacentHTML("beforeend", html);
+     $(".markdown-body").innerHTML ="";
+     $(".markdown-body").insertAdjacentHTML("beforeend",html);
      resolve();       
     });
 });
 }
-loadAllMarkdown().then(() =>{
+loadAllMarkdown("S01",0).then(() =>{
 hljs.highlightAll();
+$(".content div span")[0].classList.add("active");
 });
+
+
+/* Loading Content */
+for(let x of data["S01"]){
+$(".content div").innerHTML +=`<span>${x.slice(3)}</span>`;
+}
+activeLoadContent();
+$(".season div span").forEach((span)=>{
+span.onclick =(e)=>{
+let inner = e.target.innerHTML;
+let result = inner[0] + inner.slice(-2);
+ $(".season p").innerHTML = `${inner}<i class="zmdi zmdi-caret-down"></i>`;
+ $(".content div").innerHTML ="";
+ for(let x of data[result]){
+ $(".content div").innerHTML +=`<span>${x.slice(3)}</span>`;
+ }
+ activeLoadContent();
+ loadAllMarkdown(result,0).then(() =>{
+ hljs.highlightAll();
+   $(".content div span").forEach((span)=>{
+   span.classList.remove("active");
+   })
+   $(".content div span")[0].classList.add("active");
+   $(".content div").scroll(0,0);
+ });
+}});
+
+/* Loading Content */
+function activeLoadContent(){
+$(".content div span").forEach((span,index)=>{
+span.onclick =(e)=>{
+let season = $(".season p").innerHTML[0] + $(".season p").innerHTML[9] + $(".season p").innerHTML[10];
+let result = season[0] + season[2] + " " + e.target.innerText;
+
+$(".content div span").forEach((span)=>{
+ span.classList.remove("active");
+});
+$(".content div span")[index].classList.add("active");   
+ loadAllMarkdown(season,index).then(() =>{
+ hljs.highlightAll(); 
+ });
+}});
+}
+
+
+
+/* Prev & Next */
+let getPrevNext = (c, m) => ({ prev: c > 1 ? c - 1 : m, next: c < m ? c + 1 : 1 });
+
+
+function prev(){
+window.scrollTo({ top: 0, behavior: "smooth" });
+let season = $(".season p").innerHTML[0] + $(".season p").innerHTML[9] + $(".season p").innerHTML[10];
+let contentLen = $(".content div span").length;
+let seasonLen = $(".season div span").length;
+let activeContent;
+  $(".content div span").forEach((span, index)=>{
+  if(span.classList.contains("active")){
+  activeContent = index;
+  }});
+
+if(season =="S02" && activeContent == 0){
+ $(".season div span")[0].click();
+}
+else if(season =="S03" && activeContent == 0){
+ $(".season div span")[1].click();
+}
+else if(season =="S01" && activeContent == 0){
+ $(".season div span")[2].click();
+}
+else{
+ $(".content div span")[getPrevNext(activeContent + 1, contentLen).prev - 1].click();
+}}
+
+function next(){
+window.scrollTo({ top: 0, behavior: "smooth" });
+let season = $(".season p").innerHTML[0] + $(".season p").innerHTML[9] + $(".season p").innerHTML[10];
+let contentLen = $(".content div span").length;
+let seasonLen = $(".season div span").length;
+let activeContent;
+  $(".content div span").forEach((span, index)=>{
+  if(span.classList.contains("active")){
+  activeContent = index;
+  }});
+
+if(season =="S01" && activeContent == 12){
+ $(".season div span")[1].click();
+}
+else if(season =="S02" && activeContent == 18){
+ $(".season div span")[2].click();
+}
+else if(season =="S03" && activeContent == 2){
+ $(".season div span")[0].click();
+}
+else{
+ $(".content div span")[getPrevNext(activeContent + 1, contentLen).next - 1].click();
+}}
+
+
+
+
+/* Keys */
+//DOWNLOAD
+function download(){
+ const link = document.createElement('a');
+ link.href = "Namaste-NodeJS.zip";
+ link.download = "Namaste-NodeJS.zip";
+ document.body.appendChild(link);
+ link.click();
+ document.body.removeChild(link);
+}
+
+
+//SHARE
+if(navigator.share){
+ function share(){
+ navigator.share({
+  title: "Namaste NodeJS",
+  text: "Check out these Namaste NodeJS notes",
+  url: "https://namastenodejs.netlify.app",
+  })
+  .then(() => console.log('Successfully shared'))
+  .catch((error) => console.error('Error sharing:', error));
+  }}
+else{
+ $(".keys button")[1].style.display ="none";
+}
+
+//Report
+function report(){
+ window.location.href = "https://telegram.me/ashutosh_dev?text=Hey! I was checking out your Namaste NodeJS website and came across a bug. Here's what I found:";
+}
 </script>
 </body>
 </html>
