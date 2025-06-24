@@ -45,6 +45,23 @@
 <!-- Notes -->
 <div class="notes">
  <div class="markdown-body"></div>
+ 
+ <div class="codes">
+  <p>Code Files<i class="zmdi zmdi-download"></i></p>
+  <div></div>
+ </div>
+ 
+ <div class="code-file">
+  <div>
+  <span><i class="zmdi zmdi-file-text"></i>File.txt</span>
+  <span>
+   <i class="zmdi zmdi-download"></i>
+   <i class="zmdi zmdi-copy"></i>
+  </span>
+  </div>
+  <pre></pre>
+ </div>
+ 
  <div class="notes-keys">
   <button onclick="prev()">< Prev</button>
   <button onclick="next()">Next ></button>
@@ -71,7 +88,6 @@ var x;
 try{
 const elements = document.querySelectorAll(selector);
 if(elements.length == 1){x = elements[0]}
-else if(elements.length == 0){x = null}
 else{x = elements}
 }catch(error){
 x = error;
@@ -101,8 +117,7 @@ setTimeout(()=>{
 }
 
 /* GitHub */
-$("nav div i")[1].onclick =()=>{
- window.location.href ="https://github.com/abtp2/Namaste-NodeJs";
+$("nav div i")[1].onclick =()=>{window.open("https://github.com/abtp2/Namaste-NodeJs", "_blank");
 }
 
 /* Table of content */
@@ -158,23 +173,88 @@ S03 : [
 };
 
 
+let extraData ={
+3 : [
+"app.js"
+],
+4 : [
+"app.js",
+"data.json",
+"package.json",
+"calculate/index.js",
+"calculate/multiply.js",
+"calculate/sum.js",
+],
+5 : [
+"modules.js"
+],
+7 : [
+"async.js",
+"blocking.js",
+"file.txt",
+"setTimeoutZero.js",
+"sync.js",
+],
+9 : [
+"Eventloop.js",
+"Eventloop2.js",
+"Eventloop3.js",
+"Eventloop4.js",
+"file.txt",
+],
+10 : [
+"file.txt",
+"ThreadPool.js"
+],
+11 : [
+"Server.js",
+],
+13 : [
+"db.js"
+],
+};
+
+
 /* Load Markdown */
+let getExtension = filename => filename.slice(filename.lastIndexOf('.') + 1 || Infinity);
 function loadAllMarkdown(x,y){
 return new Promise((resolve, reject) =>{
 fetch(`./main/${data[x][y]}/README.md`)
    .then(response => response.text())
    .then(markdown => {
     const html = marked.parse(markdown);
-     $(".markdown-body").innerHTML ="";
-     $(".markdown-body").insertAdjacentHTML("beforeend",html);
+     $(".markdown-body").innerHTML = html;
+     hideCodeFile();
+     if(x=="S01" && Object.keys(extraData).includes(String(y+1))){
+     $(".codes").style.display ="flex";
+     $(".codes div").innerHTML ="";
+     extraData[y+1].forEach((name)=>{
+     let icon;
+     if(getExtension(name) =="js") icon ="language-javascript";
+     else if(getExtension(name) =="json") icon ="code";
+     else if(getExtension(name) =="txt") icon ="file-text";
+      $(".codes div").innerHTML +=`
+      <span><i class="zmdi zmdi-${icon}"></i>${name}</span>
+      `;
+      activateCodes(y).then(()=>{
+      if($(".code-file pre code").length != 0) reHighlight($(".code-file pre code"));
+      });
+     });
+     }else{
+     $(".codes").style.display ="none";
+     }
      resolve();       
     });
 });
 }
 loadAllMarkdown("S01",0).then(() =>{
-hljs.highlightAll();
+if($(".markdown-body pre code")[0]){
+$(".markdown-body pre code").forEach((elem)=>{
+ reHighlight(elem);
+});}
 $(".content div span")[0].classList.add("active");
 });
+
 
 
 /* Loading Content */
@@ -193,7 +273,10 @@ let result = inner[0] + inner.slice(-2);
  }
  activeLoadContent();
  loadAllMarkdown(result,0).then(() =>{
- hljs.highlightAll();
+ if($(".markdown-body pre code")[0]){
+ $(".markdown-body pre code").forEach((elem)=>{
+ reHighlight(elem);
+ });}
    $(".content div span").forEach((span)=>{
    span.classList.remove("active");
    })
@@ -214,7 +297,10 @@ $(".content div span").forEach((span)=>{
 });
 $(".content div span")[index].classList.add("active");   
  loadAllMarkdown(season,index).then(() =>{
- hljs.highlightAll(); 
+ if($(".markdown-body pre code")[0]){
+ $(".markdown-body pre code").forEach((elem)=>{
+ reHighlight(elem);
+ });}
  });
 }});
 }
@@ -247,6 +333,8 @@ else if(season =="S01" && activeContent == 0){
 }
 else{
  $(".content div span")[getPrevNext(activeContent + 1, contentLen).prev - 1].click();
+ $(".content div span")[getPrevNext(activeContent + 1, contentLen).prev - 1].scrollIntoView();
+ window.scrollTo({ top: 0, behavior: "smooth" });
 }}
 
 function next(){
@@ -271,9 +359,83 @@ else if(season =="S03" && activeContent == 2){
 }
 else{
  $(".content div span")[getPrevNext(activeContent + 1, contentLen).next - 1].click();
+ $(".content div span")[getPrevNext(activeContent + 1, contentLen).next - 1].scrollIntoView();
+ window.scrollTo({ top: 0, behavior: "smooth" });
 }}
 
 
+
+
+/* Codes & Code File */
+function activateCodes(y){
+return new Promise((resolve, reject) =>{
+document.querySelectorAll(".codes div span").forEach((span)=>{
+span.onclick =()=>{
+const fileName = span.innerText;
+ fetch(`./main/${data.S01[y]}/Code/${fileName}`)
+   .then(response => response.text())
+   .then(code => {
+   showCodeFile(span.innerHTML, code, getExtension(fileName));
+   if($(".code-file pre code").length != 0) reHighlight($(".code-file pre code"));
+   })
+}});
+
+$(".codes p i").onclick =()=>{
+ const link = document.createElement('a');
+ link.href = `./main/${data.S01[y]}/${y+1}-Code.zip`;
+ link.download = `Session01-ep${y}-codefiles.zip`;
+ document.body.appendChild(link);
+ link.click();
+ document.body.removeChild(link);
+}
+resolve();
+});
+}
+
+
+function showCodeFile(x,y,ext){
+let lang;
+if(ext =="txt") lang ="plaintext";
+else lang ="javascript";
+$(".code-file").style.display ="flex";
+$(".code-file div span:nth-of-type(1)").innerHTML = x;
+$(".code-file pre").innerHTML = `<code class="language-${lang}">${y}</code>`;
+
+if(!navigator.clipboard){$(".code-file div span:nth-of-type(2) i:nth-of-type(2)").style.display ="none";}
+else{$(".code-file div span:nth-of-type(2) i:nth-of-type(2)").style.display ="flex";}
+}
+function reHighlight(element){
+ element.removeAttribute("data-highlighted");
+ element.classList.remove("hljs"); 
+ hljs.highlightElement(element);
+}
+function hideCodeFile(){
+let element = $(".code-file");
+ element.removeAttribute("data-highlighted");
+ element.classList.remove("hljs"); 
+ $(".code-file").style.display ="none";
+}
+
+// Copy code
+$(".code-file div span:nth-of-type(2) i:nth-of-type(2)").onclick = function(){
+let text = this.closest(".code-file").querySelector("pre").innerText;
+const copyText = t => navigator.clipboard?.writeText(t) ||
+(document.body.appendChild(Object.assign(document.createElement("textarea"), {value: t})).select(),
+   document.execCommand("copy"),
+   document.body.lastChild.remove());
+copyText(text);
+}
+
+// Download code
+$(".code-file div span:nth-of-type(2) i:nth-of-type(1)").onclick = function(){
+let name = this.closest(".code-file").querySelector("div span:nth-of-type(1)").innerText;
+let content = this.closest(".code-file").querySelector("pre").innerText;
+const a = document.createElement("a");
+a.href = URL.createObjectURL(new Blob([content], {type: "text/plain"}));
+a.download = name;
+a.click();
+URL.revokeObjectURL(a.href);
+}
 
 
 /* Keys */
