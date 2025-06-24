@@ -383,7 +383,7 @@ const fileName = span.innerText;
 $(".codes p i").onclick =()=>{
  const link = document.createElement('a');
  link.href = `./main/${data.S01[y]}/${y+1}-Code.zip`;
- link.download = `Session01-ep${y}-codefiles.zip`;
+ link.download = `Session01-ep${y+1}-codefiles.zip`;
  document.body.appendChild(link);
  link.click();
  document.body.removeChild(link);
